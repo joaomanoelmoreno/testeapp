@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>SOULNUTRI - OCR ao Vivo</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom right, #f9f9f9, #e0e0e0);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    video {
+      width: 300px;
+      height: auto;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    #infoArea {
+      background: white;
+      padding: 20px;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .info strong {
+      display: inline-block;
+      width: 160px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h1>📷 Aponte a câmera para o nome do prato</h1>
+  <video id="video" autoplay playsinline></video>
+  <div id="infoArea">Reconhecimento ao vivo ativado...</div>
+
+  <script src="tesseract.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

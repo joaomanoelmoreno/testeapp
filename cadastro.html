@@ -1,0 +1,193 @@
+<!-- cole a partir daqui como seu cadastro.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cadastro de Prato - SoulNutri</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom right, #f9f9f9, #e0e0e0);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      width: 90%;
+      max-width: 700px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .checkbox-group label {
+      font-weight: normal;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #5c7cfa;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #4a63c3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Cadastro de Prato</h1>
+
+    <label>Nome do prato:</label>
+    <input type="text" id="nome" value="Strogonoff de Filé Mignon" />
+
+    <label>Ingredientes (separados por vírgula):</label>
+    <input type="text" id="ingredientes" value="filé mignon, creme de leite, cebola, alho, óleo, sal" />
+
+    <label>Descrição:</label>
+    <textarea id="descricao">Tradicional strogonoff feito com filé mignon macio e creme artesanal.</textarea>
+
+    <label>Informações Nutricionais:</label>
+    <textarea id="infoNutricionais">~300 kcal por porção, fonte de proteína e energia</textarea>
+
+    <label>Alérgenos (automático):</label>
+    <input type="text" id="alergenos" value="" readonly />
+
+    <label>Categorias:</label>
+    <div class="checkbox-group">
+      <label><input type="checkbox" class="categoria" checked value="Contém carne" /> Contém carne</label>
+      <label><input type="checkbox" class="categoria" checked value="Sem glúten" /> Sem glúten</label>
+    </div>
+
+    <label>Fotos:</label>
+    <input type="file" id="fotos" multiple accept="image/*" />
+
+    <div style="text-align: center;">
+      <button onclick="salvarPrato()">✅ Cadastrar prato</button>
+    </div>
+  </div>
+
+  <!-- SCRIPT COM A FUNÇÃO -->
+  <script>
+    function normalize(text) {
+      return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+    }
+
+    const alergenosAutomaticos = {
+      leite: "Lactose",
+      ovo: "Ovo",
+      trigo: "Glúten",
+      soja: "Soja",
+      amendoim: "Amendoim",
+      castanha: "Oleaginosas",
+      peixe: "Peixe",
+      camarão: "Crustáceo"
+    };
+
+    function salvarPrato() {
+      const nome = document.getElementById("nome").value.trim();
+      const ingredientes = document.getElementById("ingredientes").value.split(",").map(i => i.trim());
+      const descricao = document.getElementById("descricao").value.trim();
+      const infoNutricionais = document.getElementById("infoNutricionais").value.trim();
+
+      const alergenos = [];
+      ingredientes.forEach(ing => {
+        Object.keys(alergenosAutomaticos).forEach(chave => {
+          if (normalize(ing).includes(normalize(chave)) && !alergenos.includes(alergenosAutomaticos[chave])) {
+            alergenos.push(alergenosAutomaticos[chave]);
+          }
+        });
+      });
+
+      const categorias = Array.from(document.querySelectorAll(".categoria:checked")).map(el => el.value);
+
+      const fotos = [];
+      const arquivos = document.getElementById("fotos").files;
+      for (let i = 0; i < arquivos.length; i++) {
+        const leitor = new FileReader();
+        leitor.onload = function(e) {
+          fotos.push(e.target.result);
+          if (fotos.length === arquivos.length) {
+            salvarNoStorage();
+          }
+        };
+        leitor.readAsDataURL(arquivos[i]);
+      }
+
+      if (arquivos.length === 0) {
+        salvarNoStorage();
+      }
+
+      function salvarNoStorage() {
+        const prato = {
+          nome,
+          ingredientes,
+          descricao,
+          infoNutricionais,
+          alergenos,
+          categorias,
+          fotos
+        };
+
+        const pratos = JSON.parse(localStorage.getItem("pratos") || "[]");
+        const indexExistente = pratos.findIndex(p => normalize(p.nome) === normalize(nome));
+        if (indexExistente !== -1) {
+          pratos[indexExistente] = prato;
+        } else {
+          pratos.push(prato);
+        }
+
+        localStorage.setItem("pratos", JSON.stringify(pratos));
+        alert("Prato cadastrado com sucesso!");
+        document.getElementById("alergenos").value = alergenos.join(", ");
+        limparFormulario();
+      }
+
+      function limparFormulario() {
+        document.getElementById("nome").value = "";
+        document.getElementById("ingredientes").value = "";
+        document.getElementById("descricao").value = "";
+        document.getElementById("infoNutricionais").value = "";
+        document.getElementById("alergenos").value = "";
+        document.querySelectorAll(".categoria").forEach(c => c.checked = false);
+        document.getElementById("fotos").value = "";
+      }
+    }
+  </script>
+</body>
+</html>
